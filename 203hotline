@@ -1,0 +1,97 @@
+#!/usr/bin/python3
+
+from error import error
+import math
+import time
+import sys
+
+def usage():
+    print("USAGE")
+    print("    ./203hotline [n k | d]\n")
+    print("DESCRIPTION")
+    print("    n       n value for the computation of C(n, k)")
+    print("    k       k value for the computation of C(n, k)")
+    print("    d       average duration of calls (in seconds)")
+
+def combination(n, k):
+    combin = math.comb(n, k)
+    print("{}-combinations of a set of size {}:" .format(k, n))
+    print(combin)
+    return combin
+
+def first_overload(d):
+    nb_call = (8 * 3600) / d
+    prob = 1 / nb_call
+    under = 0
+    mylist = []
+    for k in range(0, 51):
+        mylist.append(math.comb(3500, k) * (prob**k) * ((1 - prob)**(3500-k)))
+    for k in range(0, 26):
+        under = under + mylist[k]
+    over = (1 - under) * 100
+    print("Overload: {:.1f}%" .format(over))
+
+def binomial_distribution(d):
+    start = time.time()
+    nb_call = (8 * 3600) / d
+    prob = 1 / nb_call
+
+    print("Binomial distribution:")
+    for k in range(0, 51):
+        d_binom = math.comb(3500, k) * (prob**k) * ((1 - prob)**(3500-k))
+        print("{} -> {:.3f}" .format(k, d_binom), end='')
+        if (k + 1) % 5 == 0:
+            print()
+        else:
+            if k != 50:
+                print("\t", end='')
+    print()
+    end = time.time()
+    timeline = (end - start) * 1000
+    first_overload(d)
+    print("Computation time: {:.2f} ms" .format(timeline))
+    print()
+
+def second_overload(d):
+    nb_call = (8 * 3600) / d
+    prob = 1 / nb_call
+    nb_event = 3500 * prob
+    under = 0
+    mylist = []
+    for k in range(0, 51):
+        mylist.append((math.exp(-nb_event) * (nb_event**k)) / math.factorial(k))
+    for k in range(0, 26):
+        under = under + mylist[k]
+    over = (1 - under) * 100
+    print("Overload: {:.1f}%" .format(over))
+
+def poisson_distribution(d):
+    start = time.time()
+    nb_call = (8 * 3600) / d
+    prob = 1 / nb_call
+    nb_event = 3500 * prob
+
+    print("Poisson distribution:")
+    for k in range(0, 51):
+        p_binom = (math.exp(-nb_event) * (nb_event**k)) / math.factorial(k)
+        print("{} -> {:.3f}" .format(k, p_binom), end='')
+        if (k + 1) % 5 == 0:
+            print()
+        else:
+            if k != 50:
+                print("\t", end='')
+    print()
+    end = time.time()
+    timeline = (end - start) * 1000
+    second_overload(d)
+    print("Computation time: {:.2f} ms" .format(timeline))
+
+if __name__=="__main__":
+    av = sys.argv
+    ac = len(sys.argv)
+    error(ac, av)
+    if ac == 3:
+        combination(int (av[1]), int (av[2]))
+    if ac == 2:
+        binomial_distribution(int (av[1]))
+        poisson_distribution(int (av[1]))
